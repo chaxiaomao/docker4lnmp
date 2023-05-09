@@ -1,0 +1,8 @@
+.idea
+redis/data/*
+portainer/data/*
+nginx/site.conf/*
+nginx/log/*
+nginx/ssl/*
+mysql/data/*
+mariadb/data/*

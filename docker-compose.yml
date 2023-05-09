@@ -1,0 +1,118 @@
+version: "3"
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    restart: always
+    volumes:
+      - ./nginx/log:/var/log/nginx
+      - ./nginx/site.conf:/etc/nginx/sites-available
+      - ./nginx/ssl:/etc/nginx/ssl
+      - /home/joshclan/docker-container-data/baota/wwwroot:/www
+    networks:
+      - backend
+    depends_on:
+      - php-fpm
+    ports:
+      - "80:80"
+      - "443:443"
+  php-fpm:
+    #    image: php:latest
+    build:
+      context: ./php
+      args:
+        - LARADOCK_PHP_VERSION=7.3
+        - BASE_IMAGE_TAG_PREFIX=latest
+        - CHANGE_SOURCE=true
+        - INSTALL_PHPREDIS=true
+        - INSTALL_SWOOLE=true
+        - INSTALL_XLSWRITER=true
+        - INSTALL_MONGO=true
+        - INSTALL_XDEBUG=true
+        #- XDEBUG_PORT=9003
+        #- INSTALL_MYSQL_CLIENT=true
+        - INSTALL_MYSQLI=true
+      dockerfile: Dockerfile
+    container_name: php-fpm
+    restart: always
+    volumes:
+      - /home/joshclan/docker-container-data/baota/wwwroot:/www
+    networks:
+      - backend
+    depends_on:
+      - mariadb
+      - redis
+      #- memcached
+    ports:
+      - "9000:9000"
+      #- "9003:9003"
+  mariadb:
+    image: mariadb
+#    build:
+#      context: db
+#      args:
+#        - MYSQL_VERSION=5.7
+    container_name: mariadb
+    restart: always
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      - MYSQL_ROOT_PASSWORD=root # root管理员用户密码 用户名默认root
+      #MYSQL_DEV_USER: developer   # 创建developer用户
+      #MYSQL_DEV_PASSWORD: developer  # 设置developer用户的密码
+      #- MYSQL_DATABASE=developer
+      #- MYSQL_USER=${MYSQL_USER}
+      #- MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - TZ=UTC
+    volumes:
+      - ./mariadb/data:/var/lib/mysql
+    networks:
+      - backend
+    ports:
+      - "3306:3306"
+  redis:
+    image: redis:5.0-alpine
+    container_name: redis
+    restart: always
+    command: redis-server --requirepass 123456
+    volumes:
+      - ./redis/data:/data
+    networks:
+      - backend
+    ports:
+      - "6379:6379"
+  php-redis-admin:
+    image: erikdubbelboer/phpredisadmin
+    #image: phpredisadmin/phpredisadmin
+    container_name: php-redis-admin
+    restart: always
+    environment:
+      REDIS_1_HOST: redis
+      REDIS_1_NAME: root
+      REDIS_1_AUTH: 123456
+    networks:
+      - backend
+    ports:
+      - "9002:80"
+  portainer:
+    image:  portainer/portainer
+    container_name: portainer
+    restart: always
+    ports:
+      - "9001:9000"
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./portainer/data:/data
+#  memcached:
+#    image: memcached
+#    container_name: memcached
+#    networks:
+#      - backend
+#    expose:
+#      - "11211"
+
+networks:
+  backend:
