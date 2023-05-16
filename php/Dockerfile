@@ -1295,8 +1295,8 @@ RUN set -xe; php -v | grep -q "PHP ${LARADOCK_PHP_VERSION}."
 #--------------------------------------------------------------------------
 #
 
-COPY ./laravel.ini /usr/local/etc/php/conf.d
-COPY ./xlaravel.pool.conf /usr/local/etc/php-fpm.d/
+#COPY ./laravel.ini /usr/local/etc/php/conf.d
+#COPY ./xlaravel.pool.conf /usr/local/etc/php-fpm.d/
 
 USER root
 
