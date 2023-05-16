@@ -11,16 +11,16 @@ services:
       - ./nginx/log:/var/log/nginx
       - ./nginx/site.conf:/etc/nginx/sites-available
       - ./nginx/ssl:/etc/nginx/ssl
-      - /home/joshclan/docker-container-data/baota/wwwroot:/www
+      - /home/joshclan/docker-container-data/baota/wwwroot:/var/www
     networks:
-      - backend
+      - network-lnmp
     depends_on:
       - php-fpm
     ports:
       - "80:80"
       - "443:443"
   php-fpm:
-    #    image: php:latest
+    #image: php:latest
     build:
       context: ./php
       args:
@@ -39,9 +39,9 @@ services:
     container_name: php-fpm
     restart: always
     volumes:
-      - /home/joshclan/docker-container-data/baota/wwwroot:/www
+      - /home/joshclan/docker-container-data/baota/wwwroot:/var/www
     networks:
-      - backend
+      - network-lnmp
     depends_on:
       - mariadb
       - redis
@@ -69,7 +69,7 @@ services:
     volumes:
       - ./mariadb/data:/var/lib/mysql
     networks:
-      - backend
+      - network-lnmp
     ports:
       - "3306:3306"
   redis:
@@ -80,7 +80,7 @@ services:
     volumes:
       - ./redis/data:/data
     networks:
-      - backend
+      - network-lnmp
     ports:
       - "6379:6379"
   php-redis-admin:
@@ -93,7 +93,7 @@ services:
       REDIS_1_NAME: root
       REDIS_1_AUTH: 123456
     networks:
-      - backend
+      - network-lnmp
     ports:
       - "9002:80"
   portainer:
@@ -110,9 +110,9 @@ services:
 #    image: memcached
 #    container_name: memcached
 #    networks:
-#      - backend
+#      - network-lnmp
 #    expose:
 #      - "11211"
 
 networks:
-  backend:
+  network-lnmp:
